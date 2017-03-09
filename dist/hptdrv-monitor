@@ -1,0 +1,109 @@
+#!/bin/bash
+
+# chkconfig: 12345 10 10
+# description: Rebuild driver for HighPoint HBA if kernel changed.
+### BEGIN INIT INFO
+# Provides: hptdrv-monitor
+# Required-Start:
+# Required-Stop: reboot network networking network-manager umountroot
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: Build driver for HighPoint HBA if kernel changed.
+### END INIT INFO
+
+[ -f /etc/init.d/functions ] && . /etc/init.d/functions
+
+quiet=1
+buildall=1
+
+DAEMON=hptdrv-monitor
+drvroot=/usr/share/hptdrv
+if test ! -d "${drvroot}"; then
+  exit 0
+fi
+
+goon()
+{
+  logecho "I am trapped"
+  continue
+}
+
+trap goon SIGHUP SIGINT SIGTERM
+
+. ${drvroot}/hptdrv-function
+
+if test "${modules}" = ""; then
+  exit 0
+fi
+
+temp=/var/tmp
+host=www.highpoint-tech.com
+webroot=http://${host}/linux
+
+logfile=/var/log/hptdrv.log
+lock=/var/lib/hptdrv-monitor
+[ -d /var/lock/subsys ] && lock=/var/lock/subsys/hptdrv-monitor
+
+mkinitrd=`type -p dracut`
+[ "$mkinitrd" = "" ] && mkinitrd=`type -p mkinitramfs`
+[ "$mkinitrd" = "" ] && mkinitrd=`type -p mkinitrd`
+
+rtrn=1
+warn=1
+FORCE=0
+autoup=1
+
+test "$runlevel" = "0" && warn=0
+test "$runlevel" = "6" && warn=0
+
+if test "${kernels}" = ""; then
+  logecho "no kernels detected."
+  exit 0
+fi
+
+mkdir -p "${temp}"
+
+case "$1" in
+  start)
+    touch ${lock}
+    start
+    rtrn=$?
+    ;;
+  force-stop)
+    # do not remove this file, as reboot need this on f19 and/or before/later.
+    #rm /var/lock/subsys/hptdrv-monitor
+    FORCE=1 compile
+    rtrn=$?
+    ;;
+  stop)
+    rm -f "${logfile}"
+    compile
+    rtrn=$?
+    if test "$rtrn" != "0"; then
+      update
+      rtrn=$?
+      if test "$rtrn" = "0"; then
+        compile
+        rtrn=$?
+      fi
+    fi
+    fixmodload
+    fixboot
+    #rm -f ${lock}
+    #sleep 5
+    ;;
+  restart)
+    touch ${lock}
+    rtrn=0
+    ;;
+  status)
+    rtrn=0
+    ;;
+  *)
+    echo $"Usage: $0 {start|stop|restart|status}"
+    ;;
+esac
+
+exit $rtrn
+
+# vim: expandtab ts=2 sw=2 ai

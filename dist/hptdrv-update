@@ -1,0 +1,22 @@
+#!/bin/bash
+
+drvroot=/usr/share/hptdrv
+
+if test ! -d "${drvroot}"; then
+  exit 0
+fi
+
+. ${drvroot}/hptdrv-function
+
+if test "${modules}" = ""; then
+  exit 0
+fi
+
+logfile=/var/log/hptdrv-cron.log
+
+rm -f ${logfile}
+
+update
+exit $?
+
+# vim: expandtab ts=2 sw=2 ai

@@ -1,0 +1,34 @@
+#!/bin/bash
+
+echo "Rebuilding HighPoint driver ..."
+
+drvroot=/usr/share/hptdrv
+
+. ${drvroot}/hptdrv-function
+
+if test "${modules}" = ""; then
+  exit 0
+fi
+
+if test "${kernels}" = ""; then
+  logecho "no kernels detected."
+  exit 0
+fi
+
+rm -f "${logfile}"
+logecho "Rebuild HighPoint driver"
+compile
+rtrn=$?
+if test "$rtrn" != "0"; then
+  update
+  rtrn=$?
+  if test "$rtrn" = "0"; then
+    compile
+    rtrn=$?
+  fi
+fi
+
+fixmodload
+fixboot
+
+# vim: expandtab ts=2 sw=2 ai
