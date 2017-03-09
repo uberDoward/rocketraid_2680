@@ -357,38 +357,49 @@ void refresh_sd_flags(PVBUS_EXT vbus_ext)
 					struct block_device *bdev = bdget(MKDEV(major[i], minor));
 					if (bdev &&
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38)
-						blkdev_get(bdev, FMODE_READ,NULL)
+						blkdev_get(bdev, FMODE_READ, NULL)
 #elif LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,28)
 						blkdev_get(bdev, FMODE_READ)
 #else 
 						blkdev_get(bdev, FMODE_READ, 0 __BDEV_RAW)
 #endif
 						==0) {
-						if (bdev->bd_disk && bdev->bd_disk->driverfs_dev==&SDptr->sdev_gendev) {
-							if (vbus_ext->sd_flags[id] & SD_FLAG_REVALIDATE) {
-								if (bdev->bd_disk->fops->revalidate_disk)
-									bdev->bd_disk->fops->revalidate_disk(bdev->bd_disk);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15)
-								mutex_lock(&bdev->bd_inode->i_mutex);
-#else 
-								down(&bdev->bd_inode->i_sem);
+						if (bdev->bd_disk) {
+							struct gendisk *cur_gendisk = bdev->bd_disk;
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,8,0)
+							struct device *gendisk_dev = disk_to_dev(cur_gendisk)->parent;
+#else
+							struct device *gendisk_dev = cur_gendisk->driverfs_dev;
 #endif
-								i_size_write(bdev->bd_inode, (loff_t)get_capacity(bdev->bd_disk)<<9);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15)
-								mutex_unlock(&bdev->bd_inode->i_mutex);
+							if (gendisk_dev==&SDptr->sdev_gendev) {
+								if (vbus_ext->sd_flags[id] & SD_FLAG_REVALIDATE) {
+									if (bdev->bd_disk->fops->revalidate_disk)
+										bdev->bd_disk->fops->revalidate_disk(bdev->bd_disk);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,7,0)
+									inode_lock(bdev->bd_inode);										
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15)
+									mutex_lock(&bdev->bd_inode->i_mutex);
 #else 
-								up(&bdev->bd_inode->i_sem);
+									down(&bdev->bd_inode->i_sem);
 #endif
-								vbus_ext->sd_flags[id] &= ~SD_FLAG_REVALIDATE;
-							}
-							if (bdev->bd_openers>1)
-								vbus_ext->sd_flags[id] |= SD_FLAG_IN_USE;
+									i_size_write(bdev->bd_inode, (loff_t)get_capacity(bdev->bd_disk)<<9);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15)
+									mutex_unlock(&bdev->bd_inode->i_mutex);
+#else 
+									up(&bdev->bd_inode->i_sem);
+#endif
+									vbus_ext->sd_flags[id] &= ~SD_FLAG_REVALIDATE;
+								}
+								if (bdev->bd_openers>1)
+									vbus_ext->sd_flags[id] |= SD_FLAG_IN_USE;
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,28)
-							blkdev_put(bdev, FMODE_READ);
+								blkdev_put(bdev, FMODE_READ);
 #else 
-							blkdev_put(bdev __BDEV_RAW);
+								blkdev_put(bdev __BDEV_RAW);
 #endif
-							goto next;
+								goto next;
+							}
 						}
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,28)
 						blkdev_put(bdev, FMODE_READ);
