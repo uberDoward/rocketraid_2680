@@ -177,7 +177,10 @@ typedef void irqreturn_t;
 #define scsi_set_max_cmd_len(host, len) host->max_cmd_len = len
 #endif
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)
+#undef HPT_KMAP_TYPE
+#define HPT_FIND_PCI_DEVICE
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,0)
 #define HPT_KMAP_TYPE KM_BIO_SRC_IRQ
 #define HPT_FIND_PCI_DEVICE pci_get_device
 #else 
