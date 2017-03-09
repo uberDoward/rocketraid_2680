@@ -3,6 +3,8 @@
 if test "${KERNEL_VER-set}" = set; then echo "KERNEL_VER is not set"; exit 1; fi
 if test "${TARGETNAME-set}" = set; then echo "TARGETNAME is not set"; exit 1; fi
 
+echo "Kernel Version ${KERNEL_VER} detected..."
+
 PWD=`pwd`
 
 case ${KERNEL_VER} in
@@ -10,7 +12,7 @@ case ${KERNEL_VER} in
 	OBJ=o
 	MODVER=`modinfo -f%{kernel_version} ${PWD}/${TARGETNAME}.${OBJ}`
 	;;
-	2.6 | 3.* )
+	2.6 | 3.* | 4.* )
 	OBJ=ko
 	MODVER=`modinfo -F vermagic ${PWD}/${TARGETNAME}.${OBJ} | cut -d' ' -f1`
 	;;
