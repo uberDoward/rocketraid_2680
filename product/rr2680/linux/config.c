@@ -23,7 +23,18 @@ int init_config(void)
 
 char driver_name[] = "rr2680";
 char driver_name_long[] = "RocketRAID 268x controller driver";
+
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 9)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdate-time"
+#endif
+
 char driver_ver[] = "v2.1 (" __DATE__ " " __TIME__ ")";
+
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 9)
+#pragma GCC diagnostic pop
+#endif
+
 int  osm_max_targets = 32;
 int os_max_cache_size = 0x2000000;
 
