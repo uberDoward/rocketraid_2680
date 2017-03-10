@@ -384,7 +384,9 @@ void refresh_sd_flags(PVBUS_EXT vbus_ext)
 									down(&bdev->bd_inode->i_sem);
 #endif
 									i_size_write(bdev->bd_inode, (loff_t)get_capacity(bdev->bd_disk)<<9);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,7,0)
+									inode_unlock(bdev->bd_inode);
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15)
 									mutex_unlock(&bdev->bd_inode->i_mutex);
 #else 
 									up(&bdev->bd_inode->i_sem);
