@@ -28,6 +28,8 @@ cp ${HPT_ROOT}/osm/linux/* ${KERNELDIR}/drivers/scsi/${TARGETNAME}/
 cd ${HPT_ROOT}/product
 cp ${HPT_ROOT}/product/${PRODUCTNAME}/linux/* ${KERNELDIR}/drivers/scsi/${TARGETNAME}/
 
+echo "Kernel version ${KERNEL_VER} detected..."
+
 case "$KERNEL_VER" in
 	2.4 )
 	cd ${HPT_ROOT}/lib/linux/free-${ARCH}-regparm0
@@ -143,7 +145,7 @@ CONFIG_SCSI_${UTARGETNAME}=y
 		fi
 	fi
 	;;
-	2.6 )
+	2.6 | 3.* | 4.* )
 	cd ${HPT_ROOT}/lib/linux/free-${ARCH}-regparm0
 	ld -r -o ${ARCH}-${TARGETNAME}.obj ${TARGETMODS}
 	mv ${ARCH}-${TARGETNAME}.obj $KERNELDIR/drivers/scsi/${TARGETNAME}/	
