@@ -285,6 +285,7 @@ static int hpt_detect (Scsi_Host_Template *tpnt)
 	/* search for all supported controllers */
 	for (him = him_list; him; him = him->next) {
 		for (i=0; him->get_supported_device_id(i, &pci_id); i++) {
+			os_printk("Checking PCI_ID %s...", pci_id);
 			pcidev = 0;
 			if (him->get_controller_count)
 				him->get_controller_count(&pci_id,0,0);
