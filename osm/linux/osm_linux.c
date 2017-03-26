@@ -282,6 +282,8 @@ static int hpt_detect (Scsi_Host_Template *tpnt)
 
 	init_config();
 
+    os_printk("init config completed.");
+
 	/* search for all supported controllers */
 	for (him = him_list; him; him = him->next) {
 		for (i=0; him->get_supported_device_id(i, &pci_id); i++) {
