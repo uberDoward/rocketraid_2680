@@ -278,7 +278,7 @@ static int hpt_detect (Scsi_Host_Template *tpnt)
 	struct Scsi_Host *host;
 	u16 pci_command;
 
-	os_printk("%s %s", driver_name_long, driver_ver);
+	os_printk("%s %s - patched by John Doward - uberDoward@gmail.com", driver_name_long, driver_ver);
 
 	init_config();
 
@@ -286,6 +286,7 @@ static int hpt_detect (Scsi_Host_Template *tpnt)
 	for (him = him_list; him; him = him->next) {
 		for (i=0; him->get_supported_device_id(i, &pci_id); i++) {
 			pcidev = 0;
+
 			if (him->get_controller_count) {
 				him->get_controller_count(&pci_id,0,0);
 			}
