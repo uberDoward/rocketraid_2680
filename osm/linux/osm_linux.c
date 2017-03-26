@@ -289,15 +289,18 @@ static int hpt_detect (Scsi_Host_Template *tpnt)
 		for (i=0; him->get_supported_device_id(i, &pci_id); i++) {
 			pcidev = 0;
 			if (him->get_controller_count) {
-				os_printk("Get controller count returned successfully!");
+				os_printk("Get controller count returned %s...", him->get_controller_count);
 				him->get_controller_count(&pci_id,0,0);
 			}
 			else {
-				os_printk("Controller not located...");
+				os_printk("Controller not located!");
 			}
 
+            os_printk("Using pci VID %s, pci DID %s.", pci_id.vid, pci_id.did);
+			os_printk("HPT_FIND_PCI_DEVICE defined as %s", HPT_FIND_PCI_DEVICE);
 			while ((pcidev = HPT_FIND_PCI_DEVICE(pci_id.vid,
 							pci_id.did, pcidev))) {
+				os_printk("Running hpt_init_one...");
 				hpt_init_one(him, pcidev);
 			}
 		}
