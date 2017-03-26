@@ -298,6 +298,7 @@ static int hpt_detect (Scsi_Host_Template *tpnt)
 
             os_printk("Using pci VID %s, pci DID %s.", pci_id.vid, pci_id.did);
 			os_printk("HPT_FIND_PCI_DEVICE defined as %s", HPT_FIND_PCI_DEVICE);
+			
 			while ((pcidev = HPT_FIND_PCI_DEVICE(pci_id.vid,
 							pci_id.did, pcidev))) {
 				os_printk("Running hpt_init_one...");
